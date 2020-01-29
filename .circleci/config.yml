@@ -41,9 +41,9 @@ jobs:
           moar-rev: << parameters.moar-rev >>
 
   build-linux:
+    <<: *release-parameters
     docker:
       - image: centos:6
-    <<: *release-parameters
     steps:
       - run:
           name: Update CentOS 6
@@ -82,6 +82,7 @@ jobs:
           path: rakudo.tar.gz
           destination: rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-linux-x86_64.tar.gz
   build-windows:
+    <<: *release-parameters
     executor: win/default
     working_directory: C:\rakudo
     steps:
@@ -94,6 +95,7 @@ jobs:
           path: rakudo.zip
           destination: rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-win-x86_64.zip
   build-macos:
+    <<: *release-parameters
     macos:
       xcode: 10.2.0
     steps:
