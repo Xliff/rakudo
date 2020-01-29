@@ -77,10 +77,13 @@ jobs:
             cp -r tools/build/binary-release/Linux/* install
             cp LICENSE install
             mv install rakudo-<< parameters.version >>
-            tar -zcv --owner=0 --group=0 --numeric-owner -f rakudo.tar.gz rakudo-<< parameters.version >>
+            tar -zcv --owner=0 --group=0 --numeric-owner -f rakudo-linux.tar.gz rakudo-<< parameters.version >>
       - store_artifacts:
-          path: rakudo.tar.gz
+          path: rakudo-linux.tar.gz
           destination: rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-linux-x86_64.tar.gz
+      - persist_to_workspace:
+          root: .
+          paths: rakudo-linux.tar.gz
   build-windows:
     <<: *release-parameters
     executor: win/default
@@ -92,8 +95,11 @@ jobs:
           command:
             tools/build/binary-release/build-windows.ps1
       - store_artifacts:
-          path: rakudo.zip
+          path: rakudo-win.zip
           destination: rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-win-x86_64.zip
+      - persist_to_workspace:
+          root: .
+          paths: rakudo-win.zip
   build-macos:
     <<: *release-parameters
     macos:
@@ -125,11 +131,31 @@ jobs:
             cp -r tools/build/binary-release/MacOS/* install
             cp LICENSE install
             mv install rakudo-<< parameters.version >>
-            tar -zcv --owner=0 --group=0 --numeric-owner -f rakudo.tar.gz rakudo-<< parameters.version >>
+            tar -zcv --owner=0 --group=0 --numeric-owner -f rakudo-macos.tar.gz rakudo-<< parameters.version >>
       - store_artifacts:
-          path: rakudo.tar.gz
+          path: rakudo-macos.tar.gz
           destination: rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-macos-x86_64.tar.gz
-
+      - persist_to_workspace:
+          root: .
+          paths: rakudo-macos.tar.gz
+  zip-results:
+    <<: *release-parameters
+    docker:
+      - image: alpine
+    steps:
+      - attach_workspace:
+          at: workspace
+      - run:
+          working_directory: workspace
+          command: |
+            mkdir rakudo-precomp-<< parameters.version >>-<< parameters.build-rev >>
+            mv rakudo-linux.zip rakudo-precomp-$version/rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-linux-x86_64.zip
+            mv rakudo-macos.tar.gz rakudo-precomp-$version/rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-macos-x86_64.zip
+            mv rakudo-win.zip rakudo-precomp-$version/rakudo-moar-<< parameters.version >>-<< parameters.build-rev >>-win-x86_64.zip
+            tar -czf rakudo-precomp-<< parameters.version >>-<< parameters.build-rev >>.tgz rakudo-precomp-<< parameters.version >>-<< parameters.build-rev >>
+      - store_artifacts:
+          path: workspace/rakudo-precomp-<< parameters.version >>-<< parameters.build-rev >>.tgz
+          destination: rakudo-precomp-<< parameters.version >>-<< parameters.build-rev >>.tgz
 
 
 commands:
@@ -191,4 +217,5 @@ workflows:
               only: /\n\n\n\n\.\n\n(\.\n+)?/
               #            branches:
               #ignore: /.*/
+          version: $CIRCLE_TAG
 

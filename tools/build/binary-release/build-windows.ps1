@@ -59,5 +59,5 @@ $version = Get-Content -Path .\VERSION -Raw
 $version = $version.Trim()
 mv install rakudo-$version
 
-Compress-Archive -Path rakudo-$version -DestinationPath rakudo.zip
+Compress-Archive -Path rakudo-$version -DestinationPath rakudo-win.zip
 
