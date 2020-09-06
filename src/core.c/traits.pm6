@@ -509,7 +509,7 @@ multi sub trait_mod:<handles>(Attribute:D $target, $thunk) {
             applier($!handles);
         }
     };
-    $target.set_handles($thunk());
+    $target.set_handles($thunk);
 }
 
 multi sub trait_mod:<handles>(Method:D $m, &thunk) {
